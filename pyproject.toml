@@ -7,6 +7,9 @@ authors = ["SchmitzErnany <ernany0@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 Flask = "^2.1.1"
+mongoengine = "^0.24.1"
+python-dotenv = "^0.20.0"
+python-bsonjs = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
 

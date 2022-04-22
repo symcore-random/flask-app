@@ -1,22 +1,23 @@
+from email.policy import default
 import json
+from bson import json_util
 from flask import jsonify, make_response, request, g
-from helpers.utils import lookup
 
-from models.response_model import Response
+from models.tag_model import Tag
 
 
 def get_all():
-    pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
-    responses_raw = Response.objects().aggregate(pipeline)
-    responses = json.loads(json.dumps(list(responses_raw), default=str))
-    return make_response(jsonify(responses), 200)
+    pipeline = []
+    tags_raw = Tag.objects().aggregate(pipeline)
+    tags = json.loads(json.dumps(list(tags_raw), default=str))
+    return make_response(jsonify(tags), 200)
 
 
 def get_by_id(id):
-    pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
-    responses_raw = Response.objects(id=id).aggregate(pipeline)
-    response = json.loads(json.dumps(list(responses_raw), default=str))[0]
-    return make_response(jsonify(response), 200)
+    pipeline = []
+    tags_raw = Tag.objects(id=id).aggregate(pipeline)
+    tag = json.loads(json.dumps(list(tags_raw), default=str))[0]
+    return make_response(jsonify(tag), 200)
 
 
 def create():
