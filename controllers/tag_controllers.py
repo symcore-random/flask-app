@@ -1,7 +1,7 @@
-from email.policy import default
 import json
-from bson import json_util
 from flask import jsonify, make_response, request, g
+
+from datetime import datetime
 
 from models.tag_model import Tag
 
@@ -16,47 +16,34 @@ def get_all():
 def get_by_id(id):
     pipeline = []
     tags_raw = Tag.objects(id=id).aggregate(pipeline)
-    tag = json.loads(json.dumps(list(tags_raw), default=str))[0]
+    tags = json.loads(json.dumps(list(tags_raw), default=str))
+    tag = tags[0] if tags else {}
     return make_response(jsonify(tag), 200)
 
 
 def create():
-    return make_response(
-        {'message': f'g_token:{g.token} method:{request.method}'}, 200)
+    tag_saved_raw = Tag(**request.json).save()
+    tag_saved_id = json.loads(tag_saved_raw.to_json())['_id']['$oid']
+    pipeline = []  # for population of objects
+    tag_raw = Tag.objects(id=tag_saved_id).aggregate(pipeline)
+    tag = json.loads(json.dumps(list(tag_raw), default=str))[0]
+    return make_response(jsonify(tag), 200)
 
 
 def update(id):
-    return make_response(
-        {'message': f'g_token:{g.token} method:{request.method} id:{id}'}, 200)
+    Tag.objects(id=id).update(**request.json, updated_at=datetime.utcnow)
+    pipeline = []  # for population of objects
+    tag_raw = Tag.objects(id=id).aggregate(pipeline)
+    tag = json.loads(json.dumps(list(tag_raw), default=str))[0]
+    return make_response(jsonify(tag), 200)
 
 
 def remove(id):
-    return make_response(
-        {'message': f'g_token:{g.token} method:{request.method} id:{id}'}, 200)
+    # Tag.objects(id=id).delete()
+    # In very rare occasions, the database removes documents entirely
+    # What one usually does is to update the document with {deleted:True}
+    Tag.objects(id=id).update(updated_at=datetime.utcnow,
+                              deleted_at=datetime.utcnow,
+                              deleted=True)
 
-
-# Create a text-based post
-# tag1 = Tag(tag='tag1')
-# tag2 = Tag(tag='tag2')
-# tag1.save()
-# tag2.save()
-# tag1_dic = json.loads(tag1.to_json())
-# print(tag1_dic['_id'])
-# response = Response(
-#     title='Using MongoEngine',
-#     content='See the tutorial',
-#     tags=['62621f69c23202', '62621f69c2d6aa93e2ca1302'])
-# response.save()
-
-# obj = Response.objects(id='62621da018fac71747b78dc5').aggregate(
-#     {
-#         "$lookup": {
-#             "from": "tag",  # Tag collection database name
-#             "foreignField": "_id",  # Primary key of the Tag collection
-#             "localField": "tags",  # Reference field
-#             "as": "tags",
-#         }
-#     })
-# pprint(list(obj))
-
-# print(json.loads(obj.to_json()))
+    return make_response({'message': 'document successfully deleted'}, 200)

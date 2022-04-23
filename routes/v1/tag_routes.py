@@ -1,10 +1,10 @@
 from flask import Blueprint, g
 
 from controllers import tag_controllers
-from middlewares.authCheck import token_change
+from middlewares.auth_check import auth_check
 
 tagroutes = Blueprint('tag', __name__)
-tagroutes.before_request(token_change)
+tagroutes.before_request(auth_check)
 
 tagroutes.get("/")(tag_controllers.get_all)
 tagroutes.get("/<string:id>")(tag_controllers.get_by_id)

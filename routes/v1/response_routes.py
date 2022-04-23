@@ -1,10 +1,10 @@
 from flask import Blueprint, g
 
 from controllers import response_controllers
-from middlewares.authCheck import token_change
+from middlewares.auth_check import auth_check
 
 responseroutes = Blueprint('response', __name__)
-responseroutes.before_request(token_change)
+responseroutes.before_request(auth_check)
 
 responseroutes.get("/")(response_controllers.get_all)
 responseroutes.get("/<string:id>")(response_controllers.get_by_id)
