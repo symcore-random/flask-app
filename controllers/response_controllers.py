@@ -8,18 +8,24 @@ from models.response_model import Response
 
 
 def get_all():
-    pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
-    responses_raw = Response.objects().aggregate(pipeline)
-    responses = json.loads(json.dumps(list(responses_raw), default=str))
-    return make_response(jsonify(responses), 200)
+    try:
+        pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
+        responses_raw = Response.objects().aggregate(pipeline)
+        responses = json.loads(json.dumps(list(responses_raw), default=str))
+        return make_response(jsonify(responses), 200)
+    except Exception as err:
+        return make_response(jsonify({"message": str(err)}), 400)
 
 
 def get_by_id(id):
-    pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
-    responses_raw = Response.objects(id=id).aggregate(pipeline)
-    responses = json.loads(json.dumps(list(responses_raw), default=str))
-    response = responses[0] if responses else {}
-    return make_response(jsonify(response), 200)
+    try:
+        pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
+        responses_raw = Response.objects(id=id).aggregate(pipeline)
+        responses = json.loads(json.dumps(list(responses_raw), default=str))
+        response = responses[0] if responses else {}
+        return make_response(jsonify(response), 200)
+    except Exception as err:
+        return make_response(jsonify({"message": str(err)}), 400)
 
 
 def create():
@@ -35,19 +41,25 @@ def create():
 
 
 def update(id):
-    Response.objects(id=id).update(**request.json, updated_at=datetime.utcnow)
-    pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
-    response_raw = Response.objects(id=id).aggregate(pipeline)
-    response = json.loads(json.dumps(list(response_raw), default=str))[0]
-    return make_response(jsonify(response), 200)
+    try:
+        Response.objects(id=id).update(**request.json, updated_at=datetime.utcnow)
+        pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
+        response_raw = Response.objects(id=id).aggregate(pipeline)
+        response = json.loads(json.dumps(list(response_raw), default=str))[0]
+        return make_response(jsonify(response), 200)
+    except Exception as err:
+        return make_response(jsonify({"message": str(err)}), 400)
 
 
 def remove(id):
-    # Response.objects(id=id).delete()
-    # In very rare occasions, the database removes documents entirely
-    # What one usually does is to update the document with {deleted:True}
-    Response.objects(id=id).update(updated_at=datetime.utcnow,
-                                   deleted_at=datetime.utcnow,
-                                   deleted=True)
+    try:
+        # Response.objects(id=id).delete()
+        # In very rare occasions, the database removes documents entirely
+        # What one usually does is to update the document with {deleted:True}
+        Response.objects(id=id).update(updated_at=datetime.utcnow,
+                                    deleted_at=datetime.utcnow,
+                                    deleted=True)
 
-    return make_response({'message': 'document successfully deleted'}, 200)
+        return make_response({'message': 'document successfully deleted'}, 200)
+    except Exception as err:
+        return make_response(jsonify({"message": str(err)}), 400)
