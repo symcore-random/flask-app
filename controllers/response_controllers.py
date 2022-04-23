@@ -23,12 +23,15 @@ def get_by_id(id):
 
 
 def create():
-    response_saved_raw = Response(**request.json).save()
-    response_saved_id = json.loads(response_saved_raw.to_json())['_id']['$oid']
-    pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
-    response_raw = Response.objects(id=response_saved_id).aggregate(pipeline)
-    response = json.loads(json.dumps(list(response_raw), default=str))[0]
-    return make_response(jsonify(response), 200)
+    try:
+        response_saved_raw = Response(**request.json).save()
+        response_saved_id = json.loads(response_saved_raw.to_json())['_id']['$oid']
+        pipeline = [lookup('tag:_id', 'tag_ids')]  # for population of objects
+        response_raw = Response.objects(id=response_saved_id).aggregate(pipeline)
+        response = json.loads(json.dumps(list(response_raw), default=str))[0]
+        return make_response(jsonify(response), 200)
+    except Exception as err:
+        return make_response(jsonify({"message": str(err)}), 400)
 
 
 def update(id):

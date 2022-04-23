@@ -1,5 +1,6 @@
 import json
 from flask import jsonify, make_response, request, g
+from mongoengine.errors import NotUniqueError
 
 from datetime import datetime
 
@@ -22,12 +23,15 @@ def get_by_id(id):
 
 
 def create():
-    tag_saved_raw = Tag(**request.json).save()
-    tag_saved_id = json.loads(tag_saved_raw.to_json())['_id']['$oid']
-    pipeline = []  # for population of objects
-    tag_raw = Tag.objects(id=tag_saved_id).aggregate(pipeline)
-    tag = json.loads(json.dumps(list(tag_raw), default=str))[0]
-    return make_response(jsonify(tag), 200)
+    try:
+        tag_saved_raw = Tag(**request.json).save()
+        tag_saved_id = json.loads(tag_saved_raw.to_json())['_id']['$oid']
+        pipeline = []  # for population of objects
+        tag_raw = Tag.objects(id=tag_saved_id).aggregate(pipeline)
+        tag = json.loads(json.dumps(list(tag_raw), default=str))[0]
+        return make_response(jsonify(tag), 200)
+    except Exception as err:
+        return make_response(jsonify({"message": str(err)}), 400)
 
 
 def update(id):
