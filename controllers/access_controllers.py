@@ -33,11 +33,13 @@ def login():
         access_token = jwt.encode(
             {
                 'username': database_user['username'],
+                'role': database_user['role'],
                 'exp': datetime.utcnow() + timedelta(minutes=30)
             }, secret_key)
         refresh_token = secrets.token_hex(nbytes=32)
         entry = {
             'username': database_user['username'],
+            'role': database_user['role'],
             'expiration_date': datetime.utcnow() + timedelta(minutes=45),
             'refresh_token': refresh_token
         }
@@ -65,16 +67,18 @@ def refresh():
             return make_response({'message': 'Token not found!'}, 400)
         if parse(database_access['expiration_date']) < datetime.utcnow():
             return make_response(
-                {'message': 'Token expired! Please, log in again.'}, 400)
+                {'message': 'Token expired! Please log in again.'}, 400)
 
         new_access_token = jwt.encode(
             {
                 'username': database_access['username'],
+                'role': database_access['role'],
                 'exp': datetime.utcnow() + timedelta(minutes=30)
             }, secret_key)
         new_refresh_token = secrets.token_hex(nbytes=32)
         entry = {
             'username': database_access['username'],
+            'role': database_access['role'],
             'expiration_date': datetime.utcnow() + timedelta(minutes=30),
             'refresh_token': new_refresh_token
         }

@@ -1,6 +1,6 @@
 import os
 import jwt
-from flask import make_response, request
+from flask import g, make_response, request
 
 secret_key = os.environ.get('SECRET_KEY')
 
@@ -23,7 +23,8 @@ def auth_check():
 
     # decoding the token and obtaining the corresponding user
     try:
-        jwt.decode(token, key=secret_key)
+        info = jwt.decode(token, key=secret_key)
+        g.role = info['role']
     except:
         return make_response({'message': 'Token is invalid!'}, 400)
     

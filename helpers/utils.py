@@ -10,3 +10,7 @@ def lookup(collection_key_child, key_mother):
         }
     }
     return mongo_lookup_syntax
+
+def hide_password(user):
+    user['password'] = user['password'][:30] + '*' * 30 + '...'
+    return user
