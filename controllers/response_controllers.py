@@ -1,4 +1,5 @@
 import json
+from bson import ObjectId
 from flask import jsonify, make_response, request, g
 from helpers.utils import lookup, prune_fields, filter_deleted
 
@@ -56,6 +57,9 @@ def create():
 
 def update(id):
     try:
+        if "tag_ids" in request.json.keys():
+            request.json["tag_ids"] = map(ObjectId, request.json["tag_ids"])
+
         Response.objects(id=id).update(**request.json,
                                        updated_at=datetime.utcnow)
         pipeline = [
