@@ -1,5 +1,7 @@
 FROM python:3.8-slim-buster
 
+RUN apt-get update && apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev gcc
+
 WORKDIR /app
 
 # install general dependencies
@@ -9,7 +11,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY pyproject.toml /app/
 COPY poetry.lock /app/
 RUN pip install poetry
-RUN poetry install
+RUN poetry install --no-root
 
 COPY ./ /app/
 
